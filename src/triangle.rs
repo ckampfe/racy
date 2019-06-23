@@ -1,8 +1,11 @@
+use crate::intersect::Intersect;
 use crate::intersection::Intersection;
 use crate::local_intersect::LocalIntersect;
 use crate::local_normal::LocalNormal;
+use crate::material::Material;
 use crate::normal::Normal;
 use crate::ray::Ray;
+use crate::shape::Shape;
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy)]
@@ -14,6 +17,7 @@ pub struct Triangle {
     e2: Vector3<f32>,
     normal: Vector3<f32>,
     transform: Matrix4<f32>,
+    material: Material,
 }
 
 impl Triangle {
@@ -22,6 +26,7 @@ impl Triangle {
         let e2 = p3 - p1;
         let normal = e2.cross(&e1).normalize();
         let transform = Matrix4::identity();
+        let material = Material::default();
 
         Triangle {
             p1,
@@ -31,7 +36,24 @@ impl Triangle {
             e2,
             normal,
             transform,
+            material,
         }
+    }
+}
+
+impl Shape for Triangle {
+    fn material(&self) -> Material {
+        self.material
+    }
+}
+
+impl Intersect<Triangle> for Triangle {
+    fn intersect(&self, ray: &Ray) -> Vec<Intersection<Self>> {
+        let projective_inverse: Projective3<f32> =
+            Transform::from_matrix_unchecked(self.transform).inverse();
+        let local_ray = ray.transform(projective_inverse.to_homogeneous());
+
+        self.local_intersect(local_ray)
     }
 }
 

@@ -1,5 +1,6 @@
 use nalgebra::{Matrix4, Point3, Vector3};
 
+#[derive(Clone, Copy, Debug)]
 pub struct Ray {
     pub origin: Point3<f32>,
     pub direction: Vector3<f32>,
@@ -18,7 +19,17 @@ impl Ray {
         .unwrap()
     }
 
-    pub fn transform_mut(&mut self, m: Matrix4<f32>) -> () {
+    pub fn transform(&self, m: Matrix4<f32>) -> Ray {
+        let origin = m * self.origin.to_homogeneous();
+        let direction = m * self.direction.to_homogeneous();
+
+        let new_origin = Point3::from_homogeneous(origin).unwrap();
+        let new_direction = Vector3::from_homogeneous(direction).unwrap();
+
+        Ray::new(new_origin, new_direction)
+    }
+
+    pub fn transform_mut(&mut self, m: Matrix4<f32>) {
         let origin = m * self.origin.to_homogeneous();
         let direction = m * self.direction.to_homogeneous();
 
@@ -49,6 +60,7 @@ mod tests {
         assert_eq!(r.position(2.5), Point3::new(4.5, 3.0, 4.0));
     }
 
+    /*
     #[test]
     fn a_ray_intersects_a_sphere_at_two_points() {}
 
@@ -91,20 +103,5 @@ mod tests {
     #[test]
     fn scaling_a_ray() {}
 
-    /*
-    #[test]
-    fn a_spheres_default_transformation() {}
-
-    #[test]
-    fn changing_a_spheres_transformation() {}
-
-    #[test]
-    fn intersecting_a_scaled_sphere_with_a_ray() {}
-
-    #[test]
-    fn intersecting_a_translated_sphere_with_a_ray() {}
-
-    #[test]
-    fn the_hit_should_offset_the_point() {}
     */
 }

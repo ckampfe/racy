@@ -1,9 +1,19 @@
 use crate::material::Material;
 use nalgebra::{Point3, Vector3};
 
+#[derive(Clone, Copy, Debug)]
 pub struct Light {
     pub position: Point3<f32>,
     pub intensity: Vector3<f32>,
+}
+
+impl Default for Light {
+    fn default() -> Self {
+        Light {
+            position: Point3::new(-10.0, 10.0, -10.0),
+            intensity: Vector3::new(1.0, 1.0, 1.0),
+        }
+    }
 }
 
 impl Light {

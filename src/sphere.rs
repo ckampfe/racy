@@ -1,17 +1,35 @@
+use crate::intersect::Intersect;
 use crate::intersection::Intersection;
 use crate::local_intersect::LocalIntersect;
 use crate::local_normal::LocalNormal;
 use crate::material::Material;
 use crate::normal::Normal;
 use crate::ray::Ray;
+use crate::shape::Shape;
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sphere {
-    origin: Point3<f32>,
-    radius: f32,
-    transform: Matrix4<f32>,
-    material: Material,
+    pub origin: Point3<f32>,
+    pub radius: f32,
+    pub transform: Matrix4<f32>,
+    pub material: Material,
+}
+
+impl Shape for Sphere {
+    fn material(&self) -> Material {
+        self.material
+    }
+}
+
+impl Intersect<Sphere> for Sphere {
+    fn intersect(&self, ray: &Ray) -> Vec<Intersection<Self>> {
+        let projective_inverse: Projective3<f32> =
+            Transform::from_matrix_unchecked(self.transform).inverse();
+        let local_ray = ray.transform(projective_inverse.to_homogeneous());
+
+        self.local_intersect(local_ray)
+    }
 }
 
 impl Sphere {
@@ -67,4 +85,22 @@ impl LocalIntersect<Sphere> for Sphere {
             vec![Intersection::new(t1, *self), Intersection::new(t2, *self)]
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn a_spheres_default_transformation() {}
+
+    #[test]
+    fn changing_a_spheres_transformation() {}
+
+    #[test]
+    fn intersecting_a_scaled_sphere_with_a_ray() {}
+
+    #[test]
+    fn intersecting_a_translated_sphere_with_a_ray() {}
+
+    #[test]
+    fn the_hit_should_offset_the_point() {}
 }

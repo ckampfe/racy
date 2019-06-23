@@ -1,4 +1,5 @@
 mod canvas;
+mod intersect;
 mod intersection;
 mod light;
 mod local_intersect;
@@ -6,8 +7,10 @@ mod local_normal;
 mod material;
 mod normal;
 mod ray;
+mod shape;
 mod sphere;
 mod triangle;
+mod world;
 
 use crate::canvas::Canvas;
 

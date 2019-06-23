@@ -2,7 +2,7 @@ use nalgebra::Vector3;
 
 pub type Color = Vector3<f32>;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Material {
     pub color: Color,
     pub ambient: f32,

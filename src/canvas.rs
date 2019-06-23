@@ -34,7 +34,7 @@ impl Canvas {
         self.grid.len()
     }
 
-    pub fn write_pixel(&mut self, x: usize, y: usize, pixel: Pixel) -> () {
+    pub fn write_pixel(&mut self, x: usize, y: usize, pixel: Pixel) {
         self.grid[y][x] = pixel;
     }
 
@@ -75,13 +75,11 @@ impl Canvas {
                     ppm_pixels.push_str(&line);
                     line = "".to_string();
                     line.push_str(&color_channel_value)
+                } else if line == "" {
+                    line.push_str(&color_channel_value);
                 } else {
-                    if line == "" {
-                        line.push_str(&color_channel_value);
-                    } else {
-                        line.push_str(&" ");
-                        line.push_str(&color_channel_value);
-                    }
+                    line.push_str(&" ");
+                    line.push_str(&color_channel_value);
                 }
             }
 
