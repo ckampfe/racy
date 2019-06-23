@@ -1,6 +1,5 @@
 use nalgebra::{Matrix4, Point3, Vector3};
 
-use std::boxed::Box;
 use std::cmp::Ordering;
 
 use crate::intersect::Intersect;
@@ -8,14 +7,15 @@ use crate::intersection::{Intersection, PreparedComputations};
 use crate::light::Light;
 use crate::material::Material;
 use crate::normal::Normal;
+use crate::plane::Plane;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::sphere::Sphere;
 
 #[derive(Clone, Debug)]
 pub struct World<T: Shape + Clone> {
-    objects: Vec<T>,
-    light: Light,
+    pub objects: Vec<T>,
+    pub light: Light,
 }
 
 impl<T: Intersect<T> + Shape + Clone + Normal> World<T> {
@@ -82,11 +82,11 @@ impl<T: Intersect<T> + Shape + Clone + Normal> World<T> {
     }
 }
 
-impl Default for World<Sphere> {
+impl Default for World<Plane> {
     fn default() -> Self {
         let light =
             Light::point_light(Point3::new(-10.0, 10.0, -10.0), Vector3::new(1.0, 1.0, 1.0));
-        let mut m = Material::new();
+        let mut m = Material::default();
         m.color = Vector3::new(0.8, 1.0, 0.6);
         m.diffuse = 0.7;
         m.specular = 0.2;
@@ -96,8 +96,11 @@ impl Default for World<Sphere> {
         let mut s2 = Sphere::new();
         s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5));
 
+        let floor = Plane::new();
+
         World {
-            objects: vec![s1, s2],
+            // objects: vec![s1, s2, floor],
+            objects: vec![floor],
             light,
         }
     }
