@@ -88,18 +88,15 @@ fn stl() -> std::io::Result<()> {
 
 fn stl2() -> std::io::Result<()> {
     // options.stl_path
-    let file =
-        std::fs::File::open("/Users/clark/code/data-misc/partcomplex/SPG254_R00_CableEntryBox.STL")
-            .unwrap();
+    let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
     let mmap = unsafe { MmapOptions::new().map(&file)? };
     let (_, mesh) = nom_stl::parse_stl(&mmap).unwrap();
 
     let vertices = mesh.vertices;
 
     let mut material = Material::new();
-    material.color = Vector3::new(0.0196, 0.65, 0.874);
 
-    let translation = Vector3::new(50.0, 0.0, 50.0);
+    material.color = Vector3::new(0.0196, 0.65, 0.874);
 
     let triangles = mesh
         .triangles
@@ -108,9 +105,9 @@ fn stl2() -> std::io::Result<()> {
             let [v1i, v2i, v3i] = triangle.vertices;
 
             let mut triangle = Triangle::new(
-                Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]) + translation,
-                Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]) + translation,
-                Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]) + translation,
+                Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]),
+                Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]),
+                Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]),
             );
 
             triangle.material = material;
@@ -121,11 +118,11 @@ fn stl2() -> std::io::Result<()> {
 
     let mut world = World::default();
 
-    let mut camera = Camera::new(200, 200, std::f32::consts::PI);
+    let mut camera = Camera::new(400, 400, std::f32::consts::PI / 2.0);
 
     let view_transforms = Camera::view_transforms(
-        Point3::new(50.0, 50.5, -50.0),
-        Point3::new(0.0, 1.0, 25.0),
+        Point3::new(0.0, -2.5, -5.0),
+        Point3::new(3.0, 8.0, -0.8),
         Vector3::new(0.0, 1.0, 0.0),
     );
 
@@ -137,8 +134,7 @@ fn stl2() -> std::io::Result<()> {
 
     let ppm = canvas.to_ppm();
 
-    // let mut f = File::create("moon.ppm")?;
-    let mut f = File::create("cell.ppm")?;
+    let mut f = File::create("moon.ppm")?;
     f.write_all(ppm.as_bytes())
 }
 

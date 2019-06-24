@@ -85,10 +85,8 @@ impl<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> World<T> {
 
 impl Default for World<Triangle> {
     fn default() -> Self {
-        let light = Light::point_light(
-            Point3::new(-100.0, 300.0, 300.0),
-            Vector3::new(1.0, 1.0, 1.0),
-        );
+        let light =
+            Light::point_light(Point3::new(-10.0, -10.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
         // let mut m = Material::default();
         // m.color = Vector3::new(0.5, 1.0, 0.1);
         // m.diffuse = 0.7;
