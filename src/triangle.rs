@@ -10,14 +10,14 @@ use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy)]
 pub struct Triangle {
-    p1: Point3<f32>,
-    p2: Point3<f32>,
-    p3: Point3<f32>,
-    e1: Vector3<f32>,
-    e2: Vector3<f32>,
-    normal: Vector3<f32>,
-    transform: Matrix4<f32>,
-    material: Material,
+    pub p1: Point3<f32>,
+    pub p2: Point3<f32>,
+    pub p3: Point3<f32>,
+    pub e1: Vector3<f32>,
+    pub e2: Vector3<f32>,
+    pub normal: Vector3<f32>,
+    pub transform: Matrix4<f32>,
+    pub material: Material,
 }
 
 impl Triangle {

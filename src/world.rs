@@ -1,4 +1,4 @@
-use nalgebra::{Matrix4, Point3, Vector3};
+use nalgebra::{Matrix4, Point3, Translation, Vector3};
 
 use std::cmp::Ordering;
 
@@ -11,14 +11,15 @@ use crate::plane::Plane;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::sphere::Sphere;
+use crate::triangle::Triangle;
 
 #[derive(Clone, Debug)]
-pub struct World<T: Shape + Clone> {
+pub struct World<T: Shape + Clone + Sync + Send> {
     pub objects: Vec<T>,
     pub light: Light,
 }
 
-impl<T: Intersect<T> + Shape + Clone + Normal> World<T> {
+impl<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> World<T> {
     pub fn new() -> Self {
         World {
             objects: vec![],
@@ -82,25 +83,40 @@ impl<T: Intersect<T> + Shape + Clone + Normal> World<T> {
     }
 }
 
-impl Default for World<Plane> {
+impl Default for World<Triangle> {
     fn default() -> Self {
-        let light =
-            Light::point_light(Point3::new(-10.0, 10.0, -10.0), Vector3::new(1.0, 1.0, 1.0));
-        let mut m = Material::default();
-        m.color = Vector3::new(0.8, 1.0, 0.6);
-        m.diffuse = 0.7;
-        m.specular = 0.2;
+        let light = Light::point_light(
+            Point3::new(-100.0, 300.0, 300.0),
+            Vector3::new(1.0, 1.0, 1.0),
+        );
+        // let mut m = Material::default();
+        // m.color = Vector3::new(0.5, 1.0, 0.1);
+        // m.diffuse = 0.7;
+        // m.specular = 0.2;
 
-        let mut s1 = Sphere::new();
-        s1.material = m;
-        let mut s2 = Sphere::new();
-        s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5));
+        // let mut s1 = Sphere::new();
 
-        let floor = Plane::new();
+        // s1.material = m;
+
+        // let mut s2 = Sphere::new();
+
+        // s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
+        //     * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
+
+        // let mut s3_material = Material::default();
+        // s3_material.color = Vector3::new(0.9, 0.1, 0.8);
+        // let mut s3 = Sphere::new();
+        // s3.material = s3_material;
+
+        // s3.transform = Matrix4::new_translation(&Vector3::new(3.5, 0.5, -0.5))
+        //     * Matrix4::new_nonuniform_scaling(&Vector3::new(2.5, 2.5, 2.5));
+
+        // let floor = Plane::new();
 
         World {
-            // objects: vec![s1, s2, floor],
-            objects: vec![floor],
+            objects: vec![],
+            // objects: vec![s1, s2, s3],
+            // objects: vec![floor],
             light,
         }
     }

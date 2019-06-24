@@ -5,6 +5,7 @@ use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::world::World;
 use nalgebra::{Matrix4, Point3, Projective3, Vector3};
+use rayon::prelude::*;
 
 pub struct Camera {
     pub hsize: usize,
@@ -58,22 +59,42 @@ impl Camera {
         Ray::new(origin, direction)
     }
 
-    pub fn render<T: Clone + Shape + Intersect<T> + Normal>(&self, world: World<T>) -> Canvas {
+    pub fn render<T: Clone + Shape + Intersect<T> + Normal + Sync + Send>(
+        &self,
+        world: World<T>,
+    ) -> Canvas {
         let mut image = Canvas::new(self.hsize, self.vsize);
 
-        for y in 0..self.vsize {
-            for x in 0..self.hsize {
-                let ray = self.ray_for_pixel(x, y);
-                let color = world.color_at(ray);
-                image.write_pixel(x, y, color);
-            }
+        // for y in 0..self.vsize {
+        //     for x in 0..self.hsize {
+        //         let ray = self.ray_for_pixel(x, y);
+        //         let color = world.color_at(ray);
+        //         image.write_pixel(x, y, color);
+        //     }
+        // }
+
+        let xycs: Vec<(usize, usize, Vector3<f32>)> = (0..self.vsize)
+            .into_par_iter()
+            .flat_map(|y: usize| {
+                (0..self.hsize)
+                    .into_par_iter()
+                    .map(|x| {
+                        let ray = self.ray_for_pixel(x, y);
+                        let color = world.color_at(ray);
+                        (x, y, color)
+                    })
+                    .collect::<Vec<(usize, usize, Vector3<f32>)>>()
+            })
+            .collect();
+
+        for (x, y, color) in xycs {
+            image.write_pixel(x, y, color)
         }
 
         image
     }
 
     pub fn view_transforms(from: Point3<f32>, to: Point3<f32>, up: Vector3<f32>) -> Matrix4<f32> {
-        // TODO: this is deprecated, what is the replacement?
-        Matrix4::new_observer_frame(&from, &to, &up)
+        Matrix4::face_towards(&from, &to, &up)
     }
 }

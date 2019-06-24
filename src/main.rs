@@ -16,8 +16,15 @@ mod world;
 
 use crate::camera::Camera;
 use crate::canvas::Canvas;
+use crate::light::Light;
+use crate::material::Material;
 use crate::plane::Plane;
+use crate::triangle::Triangle;
 use crate::world::World;
+
+use memmap::MmapOptions;
+use nom_stl::*;
+use rayon::prelude::*;
 
 use nalgebra::{Matrix4, Point3, Vector3, Vector4};
 
@@ -57,8 +64,6 @@ fn clock() -> std::io::Result<()> {
 }
 
 fn stl() -> std::io::Result<()> {
-    let floor = Plane::new();
-    ///////////////////
     let mut world = World::default();
 
     // world.objects.push(floor);
@@ -81,8 +86,64 @@ fn stl() -> std::io::Result<()> {
     f.write_all(ppm.as_bytes())
 }
 
+fn stl2() -> std::io::Result<()> {
+    // options.stl_path
+    let file =
+        std::fs::File::open("/Users/clark/code/data-misc/partcomplex/SPG254_R00_CableEntryBox.STL")
+            .unwrap();
+    let mmap = unsafe { MmapOptions::new().map(&file)? };
+    let (_, mesh) = nom_stl::parse_stl(&mmap).unwrap();
+
+    let vertices = mesh.vertices;
+
+    let mut material = Material::new();
+    material.color = Vector3::new(0.0196, 0.65, 0.874);
+
+    let translation = Vector3::new(50.0, 0.0, 50.0);
+
+    let triangles = mesh
+        .triangles
+        .par_iter()
+        .map(|triangle| {
+            let [v1i, v2i, v3i] = triangle.vertices;
+
+            let mut triangle = Triangle::new(
+                Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]) + translation,
+                Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]) + translation,
+                Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]) + translation,
+            );
+
+            triangle.material = material;
+
+            triangle
+        })
+        .collect();
+
+    let mut world = World::default();
+
+    let mut camera = Camera::new(200, 200, std::f32::consts::PI);
+
+    let view_transforms = Camera::view_transforms(
+        Point3::new(50.0, 50.5, -50.0),
+        Point3::new(0.0, 1.0, 25.0),
+        Vector3::new(0.0, 1.0, 0.0),
+    );
+
+    camera.transform = view_transforms;
+
+    world.objects = triangles;
+
+    let canvas = camera.render(world);
+
+    let ppm = canvas.to_ppm();
+
+    // let mut f = File::create("moon.ppm")?;
+    let mut f = File::create("cell.ppm")?;
+    f.write_all(ppm.as_bytes())
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
     // Ok(clock()?)
-    Ok(stl()?)
+    Ok(stl2()?)
 }
