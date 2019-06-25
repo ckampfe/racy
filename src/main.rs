@@ -92,8 +92,8 @@ fn stl() -> std::io::Result<()> {
 
 fn stl2<T: Shape>() -> std::io::Result<()> {
     // options.stl_path
-    // let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
-    let file = std::fs::File::open("/Users/clark/Downloads/rpi3-top_rev03.stl").unwrap();
+    let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
+    // let file = std::fs::File::open("/Users/clark/Downloads/rpi3-top_rev03.stl").unwrap();
     let mmap = unsafe { MmapOptions::new().map(&file)? };
     let (_, mesh) = nom_stl::parse_stl(&mmap).unwrap();
 
@@ -125,16 +125,22 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     let mut world = World::default();
 
-    let light = Light::point_light(Point3::new(70.0, 60.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
+    // let light = Light::point_light(Point3::new(70.0, 60.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
 
-    world.light = light;
+    // world.light = light;
 
-    let mut camera = Camera::new(1_000, 1_000, std::f32::consts::PI / 2.0);
+    let mut camera = Camera::new(800, 800, std::f32::consts::PI / 2.0);
 
+    // let view_transforms = Camera::view_transforms(
+    //     // Point3::new(0.0, -2.5, -5.0),
+    //     Point3::new(-10.0, -20.5, -20.0),
+    //     Point3::new(3.0, -50.0, -0.8),
+    //     Vector3::new(0.0, 1.0, 0.0),
+    // );
     let view_transforms = Camera::view_transforms(
-        // Point3::new(0.0, -2.5, -5.0),
-        Point3::new(-10.0, -20.5, -20.0),
-        Point3::new(3.0, -50.0, -0.8),
+        Point3::new(0.0, -2.5, -10.0),
+        // Point3::new(-10.0, -20.5, -20.0),
+        Point3::new(0.0, -5.0, 0.0),
         Vector3::new(0.0, 1.0, 0.0),
     );
 
@@ -148,7 +154,8 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     let ppm = canvas.to_ppm();
 
-    let mut f = File::create("case.ppm")?;
+    // let mut f = File::create("case.ppm")?;
+    let mut f = File::create("moon_floor.ppm")?;
     f.write_all(ppm.as_bytes())
 }
 

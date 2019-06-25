@@ -90,10 +90,9 @@ impl Default for World
 // where T: Clone + Sync + Send + Shape
 {
     fn default() -> Self {
-        let light =
-            Light::point_light(Point3::new(-10.0, -10.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
+        let light = Light::point_light(Point3::new(16.0, 10.0, 25.0), Vector3::new(1.0, 1.0, 1.0));
         let mut m = Material::default();
-        m.color = Vector3::new(0.5, 1.0, 0.1);
+        m.color = Vector3::new(0.1, 1.0, 0.1);
         m.diffuse = 0.7;
         m.specular = 0.2;
 
@@ -101,10 +100,21 @@ impl Default for World
 
         s1.material = m;
 
+        s1.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(1.5, 1.5, 1.5))
+            * Matrix4::new_translation(&Vector3::new(2.0, 0.8, -2.0));
+
+        let mut m2 = Material::default();
+
+        m2.color = Vector3::new(0.2, 0.1, 0.8);
+        m2.diffuse = 0.7;
+        m2.specular = 0.2;
+
         let mut s2 = Sphere::new();
 
-        s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
-            * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
+        s2.material = m2;
+
+        s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(2.0, 2.0, 2.0))
+            * Matrix4::new_translation(&Vector3::new(-1.3, 1.0, 0.0));
 
         // let mut s3_material = Material::default();
         // s3_material.color = Vector3::new(0.9, 0.1, 0.8);
@@ -118,6 +128,7 @@ impl Default for World
 
         World {
             // objects: vec![],
+            // objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
             objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
             // objects: vec![floor],
             light,
