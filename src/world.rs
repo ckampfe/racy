@@ -1,8 +1,9 @@
 use nalgebra::{Matrix4, Point3, Translation, Vector3};
 
 use std::cmp::Ordering;
+use std::sync::Arc;
 
-use crate::intersect::Intersect;
+// use crate::intersect::Intersect;
 use crate::intersection::{Intersection, PreparedComputations};
 use crate::light::Light;
 use crate::material::Material;
@@ -13,13 +14,12 @@ use crate::shape::Shape;
 use crate::sphere::Sphere;
 use crate::triangle::Triangle;
 
-#[derive(Clone, Debug)]
-pub struct World<T: Shape + Clone + Sync + Send> {
-    pub objects: Vec<T>,
+pub struct World {
+    pub objects: Vec<Arc<dyn Shape>>,
     pub light: Light,
 }
 
-impl<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> World<T> {
+impl /*<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> */ World {
     pub fn new() -> Self {
         World {
             objects: vec![],
@@ -32,50 +32,53 @@ impl<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> World<T> {
     //     xs.contains(&object)
     // }
 
-    fn intersect(&self, ray: Ray) -> Vec<Intersection<T>> {
-        let mut intersections: Vec<Intersection<T>> = self
+    fn intersect<T: Shape>(&self, ray: Ray) -> Vec<Box<Intersection>> {
+        let mut intersections: Vec<Box<Intersection>> = self
             .objects
             .iter()
-            .flat_map(|object| (*object).intersect(&ray))
+            .flat_map(|object| (**object).intersect(&ray))
             .collect();
 
         intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 
+        // let boxed = intersections.iter().map(|i| Box::new(i)).collect();
+
+        // boxed
         intersections
     }
 
-    fn shade_hit(&self, comps: PreparedComputations<T>) -> Vector3<f32> {
+    fn shade_hit<T: Shape>(&self, comps: PreparedComputations<&Box<dyn Shape>>) -> Vector3<f32> {
         Light::lighting(
             (*comps.1).material(),
             self.light,
             comps.6,
             comps.3,
             comps.4,
-            self.is_shadowed(comps.6),
+            self.is_shadowed::<T>(comps.6),
         )
     }
 
-    pub fn color_at(&self, ray: Ray) -> Vector3<f32> {
-        let intersections = self.intersect(ray);
+    pub fn color_at<T: Shape>(&self, ray: Ray) -> Vector3<f32> {
+        let intersections = self.intersect::<T>(ray);
         let intersection = Intersection::hit(intersections);
 
-        if let Some(i) = intersection {
+        if let Some(i) = intersection.get(0) {
             let comps = i.prepare_computations(&ray);
-            self.shade_hit(comps)
+            self.shade_hit::<T>(comps)
         } else {
             Vector3::new(0.0, 0.0, 0.0) // black
         }
     }
 
-    fn is_shadowed(&self, point: Point3<f32>) -> bool {
+    fn is_shadowed<T: Shape>(&self, point: Point3<f32>) -> bool {
         let v = self.light.position - point;
         let distance = v.magnitude();
         let direction = v.normalize();
         let ray = Ray::new(point, direction);
-        let intersections = self.intersect(ray);
+        let intersections = self.intersect::<T>(ray);
         let hit = Intersection::hit(intersections);
 
-        if let Some(h) = hit {
+        if let Some(h) = hit.get(0) {
             h.t < distance
         } else {
             false
@@ -83,23 +86,25 @@ impl<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> World<T> {
     }
 }
 
-impl Default for World<Triangle> {
+impl Default for World
+// where T: Clone + Sync + Send + Shape
+{
     fn default() -> Self {
         let light =
             Light::point_light(Point3::new(-10.0, -10.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
-        // let mut m = Material::default();
-        // m.color = Vector3::new(0.5, 1.0, 0.1);
-        // m.diffuse = 0.7;
-        // m.specular = 0.2;
+        let mut m = Material::default();
+        m.color = Vector3::new(0.5, 1.0, 0.1);
+        m.diffuse = 0.7;
+        m.specular = 0.2;
 
-        // let mut s1 = Sphere::new();
+        let mut s1 = Sphere::new();
 
-        // s1.material = m;
+        s1.material = m;
 
-        // let mut s2 = Sphere::new();
+        let mut s2 = Sphere::new();
 
-        // s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
-        //     * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
+         s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
+             * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
 
         // let mut s3_material = Material::default();
         // s3_material.color = Vector3::new(0.9, 0.1, 0.8);
@@ -109,11 +114,11 @@ impl Default for World<Triangle> {
         // s3.transform = Matrix4::new_translation(&Vector3::new(3.5, 0.5, -0.5))
         //     * Matrix4::new_nonuniform_scaling(&Vector3::new(2.5, 2.5, 2.5));
 
-        // let floor = Plane::new();
+        let floor = Plane::new();
 
         World {
-            objects: vec![],
-            // objects: vec![s1, s2, s3],
+            // objects: vec![],
+            objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
             // objects: vec![floor],
             light,
         }

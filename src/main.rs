@@ -21,6 +21,7 @@ use crate::material::Material;
 use crate::plane::Plane;
 use crate::triangle::Triangle;
 use crate::world::World;
+use crate::shape::Shape;
 
 use memmap::MmapOptions;
 use nom_stl::*;
@@ -31,6 +32,7 @@ use nalgebra::{Matrix4, Point3, Vector3, Vector4};
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::Arc;
 
 fn clock() -> std::io::Result<()> {
     let white = Vector3::new(255.0, 255.0, 255.0);
@@ -63,6 +65,7 @@ fn clock() -> std::io::Result<()> {
     f.write_all(out.as_bytes())
 }
 
+/*
 fn stl() -> std::io::Result<()> {
     let mut world = World::default();
 
@@ -85,10 +88,12 @@ fn stl() -> std::io::Result<()> {
     let mut f = File::create("x.ppm")?;
     f.write_all(ppm.as_bytes())
 }
+*/
 
-fn stl2() -> std::io::Result<()> {
+fn stl2<T: Shape>() -> std::io::Result<()> {
     // options.stl_path
-    let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
+    // let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
+    let file = std::fs::File::open("/Users/clark/Downloads/rpi3-top_rev03.stl").unwrap();
     let mmap = unsafe { MmapOptions::new().map(&file)? };
     let (_, mesh) = nom_stl::parse_stl(&mmap).unwrap();
 
@@ -98,9 +103,10 @@ fn stl2() -> std::io::Result<()> {
 
     material.color = Vector3::new(0.0196, 0.65, 0.874);
 
-    let triangles = mesh
+    let mut triangles: Vec<Arc<dyn Shape>> = mesh
         .triangles
-        .par_iter()
+        // .par_iter()
+        .iter()
         .map(|triangle| {
             let [v1i, v2i, v3i] = triangle.vertices;
 
@@ -112,34 +118,45 @@ fn stl2() -> std::io::Result<()> {
 
             triangle.material = material;
 
-            triangle
+            let shape: Arc<dyn Shape> = Arc::new(triangle);
+
+            shape
         })
-        .collect();
+        .collect::<Vec<Arc<dyn Shape>>>();
 
     let mut world = World::default();
 
-    let mut camera = Camera::new(400, 400, std::f32::consts::PI / 2.0);
+    let light = Light::point_light(Point3::new(70.0, 60.0, -5.0), Vector3::new(1.0, 1.0, 1.0));
+
+    world.light = light;
+
+    let mut camera = Camera::new(1_000, 1_000, std::f32::consts::PI / 2.0);
 
     let view_transforms = Camera::view_transforms(
-        Point3::new(0.0, -2.5, -5.0),
-        Point3::new(3.0, 8.0, -0.8),
+        // Point3::new(0.0, -2.5, -5.0),
+        Point3::new(-10.0, -20.5, -20.0),
+        Point3::new(3.0, -50.0, -0.8),
         Vector3::new(0.0, 1.0, 0.0),
     );
 
     camera.transform = view_transforms;
 
-    world.objects = triangles;
+    world.objects.append(&mut triangles);
 
-    let canvas = camera.render(world);
+    // world.objects = triangles;
+
+    let canvas = camera.render::<T>(world);
 
     let ppm = canvas.to_ppm();
 
-    let mut f = File::create("moon.ppm")?;
+    let mut f = File::create("case.ppm")?;
     f.write_all(ppm.as_bytes())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
     // Ok(clock()?)
-    Ok(stl2()?)
+    let x = stl2::<sphere::Sphere>()?;
+    Ok(x)
+    // Ok(stl2()?)
 }

@@ -1,5 +1,5 @@
 use crate::canvas::Canvas;
-use crate::intersect::Intersect;
+// use crate::intersect::Intersect;
 use crate::normal::Normal;
 use crate::ray::Ray;
 use crate::shape::Shape;
@@ -59,9 +59,9 @@ impl Camera {
         Ray::new(origin, direction)
     }
 
-    pub fn render<T: Clone + Shape + Intersect<T> + Normal + Sync + Send>(
+    pub fn render<T: Shape>(
         &self,
-        world: World<T>,
+        world: World,
     ) -> Canvas {
         let mut image = Canvas::new(self.hsize, self.vsize);
 
@@ -74,13 +74,15 @@ impl Camera {
         // }
 
         let xycs: Vec<(usize, usize, Vector3<f32>)> = (0..self.vsize)
-            .into_par_iter()
+            // .into_par_iter()
+            .into_iter()
             .flat_map(|y: usize| {
                 (0..self.hsize)
-                    .into_par_iter()
+                    // .into_par_iter()
+                    .into_iter()
                     .map(|x| {
                         let ray = self.ray_for_pixel(x, y);
-                        let color = world.color_at(ray);
+                        let color = world.color_at::<T>(ray);
                         (x, y, color)
                     })
                     .collect::<Vec<(usize, usize, Vector3<f32>)>>()
