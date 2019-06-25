@@ -15,11 +15,11 @@ use crate::sphere::Sphere;
 use crate::triangle::Triangle;
 
 pub struct World {
-    pub objects: Vec<Arc<dyn Shape>>,
+    pub objects: Vec<Arc<dyn Shape + Send + Sync>>,
     pub light: Light,
 }
 
-impl /*<T: Intersect<T> + Shape + Clone + Normal + Sync + Send> */ World {
+impl World {
     pub fn new() -> Self {
         World {
             objects: vec![],
@@ -103,8 +103,8 @@ impl Default for World
 
         let mut s2 = Sphere::new();
 
-         s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
-             * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
+        s2.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(0.5, 0.5, 0.5))
+            * Matrix4::new_translation(&Vector3::new(1.5, 0.5, -0.5));
 
         // let mut s3_material = Material::default();
         // s3_material.color = Vector3::new(0.9, 0.1, 0.8);

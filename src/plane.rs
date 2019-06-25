@@ -80,9 +80,9 @@ impl LocalIntersect for Plane {
 //             Transform::from_matrix_unchecked(self.transform.transpose());
 //         let world_normal = transposed_transform.inverse_transform_vector(&local_normal);
 //         let mut world_normal_homogeneous = world_normal.to_homogeneous();
-// 
+//
 //         world_normal_homogeneous.w = 0.0;
-// 
+//
 //         Vector3::from_homogeneous(world_normal_homogeneous)
 //             .unwrap()
 //             .normalize()
@@ -94,7 +94,7 @@ impl LocalIntersect for Plane {
 //         let projective_inverse: Projective3<f32> =
 //             Transform::from_matrix_unchecked(self.transform).inverse();
 //         let local_ray = ray.transform(projective_inverse.to_homogeneous());
-// 
+//
 //         self.local_intersect(local_ray)
 //     }
 // }

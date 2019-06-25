@@ -19,9 +19,9 @@ use crate::canvas::Canvas;
 use crate::light::Light;
 use crate::material::Material;
 use crate::plane::Plane;
+use crate::shape::Shape;
 use crate::triangle::Triangle;
 use crate::world::World;
-use crate::shape::Shape;
 
 use memmap::MmapOptions;
 use nom_stl::*;
@@ -103,10 +103,9 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     material.color = Vector3::new(0.0196, 0.65, 0.874);
 
-    let mut triangles: Vec<Arc<dyn Shape>> = mesh
+    let mut triangles: Vec<Arc<dyn Shape + Send + Sync>> = mesh
         .triangles
-        // .par_iter()
-        .iter()
+        .par_iter()
         .map(|triangle| {
             let [v1i, v2i, v3i] = triangle.vertices;
 
@@ -118,11 +117,11 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
             triangle.material = material;
 
-            let shape: Arc<dyn Shape> = Arc::new(triangle);
+            let shape: Arc<dyn Shape + Send + Sync> = Arc::new(triangle);
 
             shape
         })
-        .collect::<Vec<Arc<dyn Shape>>>();
+        .collect::<Vec<Arc<dyn Shape + Send + Sync>>>();
 
     let mut world = World::default();
 

@@ -43,7 +43,7 @@ impl Intersection {
     }
 
     pub fn hit(intersections: Vec<Box<Intersection>>) -> Vec<Box<Intersection>> {
-            let positive_intersections = Intersection::positives(intersections);
+        let positive_intersections = Intersection::positives(intersections);
 
         positive_intersections
 

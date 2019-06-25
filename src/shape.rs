@@ -1,5 +1,5 @@
-use crate::material::Material;
 use crate::intersection::Intersection;
+use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::{Point3, Vector3};
 

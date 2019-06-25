@@ -52,7 +52,7 @@ impl Shape for Sphere {
 //         let projective_inverse: Projective3<f32> =
 //             Transform::from_matrix_unchecked(self.transform).inverse();
 //         let local_ray = ray.transform(projective_inverse.to_homogeneous());
-// 
+//
 //         self.local_intersect(local_ray)
 //     }
 // }
@@ -78,9 +78,9 @@ impl Sphere {
 //             Transform::from_matrix_unchecked(self.transform.transpose());
 //         let world_normal = transposed_transform.inverse_transform_vector(&local_normal);
 //         let mut world_normal_homogeneous = world_normal.to_homogeneous();
-// 
+//
 //         world_normal_homogeneous.w = 0.0;
-// 
+//
 //         Vector3::from_homogeneous(world_normal_homogeneous)
 //             .unwrap()
 //             .normalize()
@@ -107,7 +107,10 @@ impl LocalIntersect for Sphere {
             let disc_sqrt = discriminant.sqrt();
             let t1 = -b - disc_sqrt / (2.0 * a);
             let t2 = -b + disc_sqrt / (2.0 * a);
-            vec![Box::new(Intersection::new(t1, *self)), Box::new(Intersection::new(t2, *self))]
+            vec![
+                Box::new(Intersection::new(t1, *self)),
+                Box::new(Intersection::new(t2, *self)),
+            ]
         }
     }
 }
