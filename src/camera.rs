@@ -1,6 +1,4 @@
 use crate::canvas::Canvas;
-// use crate::intersect::Intersect;
-use crate::normal::Normal;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::world::World;

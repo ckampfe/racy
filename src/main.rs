@@ -1,10 +1,7 @@
 mod camera;
 mod canvas;
-mod intersect;
 mod intersection;
 mod light;
-mod local_intersect;
-mod local_normal;
 mod material;
 mod normal;
 mod plane;
@@ -15,25 +12,23 @@ mod triangle;
 mod world;
 
 use crate::camera::Camera;
-use crate::canvas::Canvas;
-use crate::light::Light;
 use crate::material::Material;
-use crate::plane::Plane;
 use crate::shape::Shape;
 use crate::triangle::Triangle;
 use crate::world::World;
 
 use memmap::MmapOptions;
-use nom_stl::*;
+use nom_stl;
 use rayon::prelude::*;
 
-use nalgebra::{Matrix4, Point3, Vector3, Vector4};
+use nalgebra::{Point3, Vector3};
 
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::sync::Arc;
 
+/*
 fn clock() -> std::io::Result<()> {
     let white = Vector3::new(255.0, 255.0, 255.0);
 
@@ -64,6 +59,7 @@ fn clock() -> std::io::Result<()> {
     let mut f = File::create("clock.ppm")?;
     f.write_all(out.as_bytes())
 }
+*/
 
 /*
 fn stl() -> std::io::Result<()> {

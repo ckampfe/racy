@@ -1,4 +1,3 @@
-use crate::normal::Normal;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use nalgebra::{Point3, Vector3};
@@ -31,8 +30,8 @@ impl Intersection {
         intersections
     }
 
-    fn positives(v: Vec<Box<Intersection>>) -> Vec<Box<Intersection>> {
-        let mut positive_intersections: Vec<Box<Intersection>> = v
+    pub fn hit(intersections: Vec<Box<Intersection>>) -> Vec<Box<Intersection>> {
+        let mut positive_intersections: Vec<Box<Intersection>> = intersections
             .into_iter()
             .filter(|i| i.t >= 0.0)
             .collect::<Vec<Box<Intersection>>>();
@@ -40,18 +39,6 @@ impl Intersection {
         positive_intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 
         positive_intersections
-    }
-
-    pub fn hit(intersections: Vec<Box<Intersection>>) -> Vec<Box<Intersection>> {
-        let positive_intersections = Intersection::positives(intersections);
-
-        positive_intersections
-
-        //     if positive_intersections.is_empty() {
-        //         None
-        //     } else {
-        //         Some(positive_intersections[0])
-        //     }
     }
 
     pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations<&Box<dyn Shape>> {

@@ -1,18 +1,15 @@
-use nalgebra::{Matrix4, Point3, Translation, Vector3};
+use nalgebra::{Matrix4, Point3, Vector3};
 
 use std::cmp::Ordering;
 use std::sync::Arc;
 
-// use crate::intersect::Intersect;
 use crate::intersection::{Intersection, PreparedComputations};
 use crate::light::Light;
 use crate::material::Material;
-use crate::normal::Normal;
 use crate::plane::Plane;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::sphere::Sphere;
-use crate::triangle::Triangle;
 
 pub struct World {
     pub objects: Vec<Arc<dyn Shape + Send + Sync>>,
@@ -86,9 +83,7 @@ impl World {
     }
 }
 
-impl Default for World
-// where T: Clone + Sync + Send + Shape
-{
+impl Default for World {
     fn default() -> Self {
         let light = Light::point_light(Point3::new(16.0, 10.0, 25.0), Vector3::new(1.0, 1.0, 1.0));
         let mut m = Material::default();
@@ -127,10 +122,7 @@ impl Default for World
         let floor = Plane::new();
 
         World {
-            // objects: vec![],
-            // objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
             objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
-            // objects: vec![floor],
             light,
         }
     }
