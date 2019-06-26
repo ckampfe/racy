@@ -38,9 +38,6 @@ impl World {
 
         intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 
-        // let boxed = intersections.iter().map(|i| Box::new(i)).collect();
-
-        // boxed
         intersections
     }
 
@@ -59,7 +56,7 @@ impl World {
         let intersections = self.intersect::<T>(ray);
         let intersection = Intersection::hit(intersections);
 
-        if let Some(i) = intersection.get(0) {
+        if let Some(i) = intersection {
             let comps = i.prepare_computations(&ray);
             self.shade_hit::<T>(comps)
         } else {
@@ -75,7 +72,7 @@ impl World {
         let intersections = self.intersect::<T>(ray);
         let hit = Intersection::hit(intersections);
 
-        if let Some(h) = hit.get(0) {
+        if let Some(h) = hit {
             h.t < distance
         } else {
             false

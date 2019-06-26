@@ -30,7 +30,7 @@ impl Intersection {
         intersections
     }
 
-    pub fn hit(intersections: Vec<Intersection>) -> Vec<Intersection> {
+    pub fn hit(intersections: Vec<Intersection>) -> Option<Intersection> {
         let mut positive_intersections: Vec<Intersection> = intersections
             .into_iter()
             .filter(|i| i.t >= 0.0)
@@ -38,7 +38,12 @@ impl Intersection {
 
         positive_intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 
-        positive_intersections
+        // TODO: fix this nonsense
+        if positive_intersections.len() > 0 {
+            Some(positive_intersections.swap_remove(0))
+        } else {
+            None
+        }
     }
 
     pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations<&Box<dyn Shape>> {
