@@ -32,7 +32,7 @@ impl Shape for Plane {
             vec![]
         } else {
             let t = -ray.origin.y / ray.direction.y;
-            vec![Intersection::new(t, *self)]
+            vec![Intersection::new(t, self)]
         }
     }
 

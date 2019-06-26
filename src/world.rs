@@ -41,7 +41,7 @@ impl World {
         intersections
     }
 
-    fn shade_hit<T: Shape>(&self, comps: PreparedComputations<&Box<dyn Shape>>) -> Vector3<f32> {
+    fn shade_hit<T: Shape>(&self, comps: PreparedComputations<&dyn Shape>) -> Vector3<f32> {
         Light::lighting(
             (*comps.1).material(),
             self.light,

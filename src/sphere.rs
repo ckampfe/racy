@@ -51,7 +51,7 @@ impl Shape for Sphere {
             let disc_sqrt = discriminant.sqrt();
             let t1 = -b - disc_sqrt / (2.0 * a);
             let t2 = -b + disc_sqrt / (2.0 * a);
-            vec![Intersection::new(t1, *self), Intersection::new(t2, *self)]
+            vec![Intersection::new(t1, self), Intersection::new(t2, self)]
         }
     }
 

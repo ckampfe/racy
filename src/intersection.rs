@@ -5,7 +5,7 @@ use std::cmp::Ordering;
 
 pub type PreparedComputations<'a, T> = (
     f32,
-    Box<T>,
+    T,
     Point3<f32>,
     Vector3<f32>,
     Vector3<f32>,
@@ -13,17 +13,14 @@ pub type PreparedComputations<'a, T> = (
     Point3<f32>,
 );
 
-pub struct Intersection {
+pub struct Intersection<'a> {
     pub t: f32,
-    pub object: Box<dyn Shape>,
+    pub object: &'a dyn Shape,
 }
 
-impl Intersection {
-    pub fn new<T: 'static + Shape>(t: f32, object: T) -> Self {
-        Intersection {
-            t,
-            object: Box::new(object),
-        }
+impl<'a> Intersection<'a> {
+    pub fn new<T: 'a + Shape>(t: f32, object: &'a T) -> Self {
+        Intersection { t, object }
     }
 
     pub fn aggregate(intersections: Vec<Intersection>) -> Vec<Intersection> {
@@ -39,14 +36,14 @@ impl Intersection {
         positive_intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 
         // TODO: fix this nonsense
-        if positive_intersections.len() > 0 {
+        if !positive_intersections.is_empty() {
             Some(positive_intersections.swap_remove(0))
         } else {
             None
         }
     }
 
-    pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations<&Box<dyn Shape>> {
+    pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations<&dyn Shape> {
         let point = ray.position(self.t);
         let eyev = ray.direction * -1.0;
         let normalv = (*self.object).normal_at(point);
@@ -61,7 +58,7 @@ impl Intersection {
 
         (
             self.t,
-            Box::new(&self.object),
+            self.object,
             point,
             eyev,
             normalv,

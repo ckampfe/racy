@@ -87,7 +87,7 @@ impl Shape for Triangle {
                     vec![]
                 } else {
                     let t = f * self.e2.dot(&origin_cross_e1);
-                    vec![Intersection::new(t, *self)]
+                    vec![Intersection::new(t, self)]
                 }
             }
         }
