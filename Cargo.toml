@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 memmap = "0.7.0"
 nalgebra = "0.18"
-nom_stl = { git = "ssh://git@github.com/fast-radius/nom_stl", rev = "3664f21", features = ["hashbrown"] }
+nom_stl = { git = "ssh://git@github.com/fast-radius/nom_stl", rev = "6eaa874", features = ["hashbrown"] }
 rayon = "1.1.0"
 
 [profile.release]
