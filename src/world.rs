@@ -29,8 +29,8 @@ impl World {
     //     xs.contains(&object)
     // }
 
-    fn intersect<T: Shape>(&self, ray: Ray) -> Vec<Box<Intersection>> {
-        let mut intersections: Vec<Box<Intersection>> = self
+    fn intersect<T: Shape>(&self, ray: Ray) -> Vec<Intersection> {
+        let mut intersections: Vec<Intersection> = self
             .objects
             .iter()
             .flat_map(|object| (**object).intersect(&ray))

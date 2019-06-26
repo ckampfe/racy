@@ -63,7 +63,7 @@ impl Shape for Triangle {
             .normalize()
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Box<Intersection>> {
+    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
         let dir_cross_e2 = ray.direction.cross(&self.e2);
         let det = self.e1.dot(&dir_cross_e2);
 
@@ -87,7 +87,7 @@ impl Shape for Triangle {
                     vec![]
                 } else {
                     let t = f * self.e2.dot(&origin_cross_e1);
-                    vec![Box::new(Intersection::new(t, *self))]
+                    vec![Intersection::new(t, *self)]
                 }
             }
         }

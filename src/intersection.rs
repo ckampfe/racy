@@ -30,11 +30,11 @@ impl Intersection {
         intersections
     }
 
-    pub fn hit(intersections: Vec<Box<Intersection>>) -> Vec<Box<Intersection>> {
-        let mut positive_intersections: Vec<Box<Intersection>> = intersections
+    pub fn hit(intersections: Vec<Intersection>) -> Vec<Intersection> {
+        let mut positive_intersections: Vec<Intersection> = intersections
             .into_iter()
             .filter(|i| i.t >= 0.0)
-            .collect::<Vec<Box<Intersection>>>();
+            .collect::<Vec<Intersection>>();
 
         positive_intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
 

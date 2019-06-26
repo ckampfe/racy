@@ -27,12 +27,12 @@ impl Shape for Plane {
         self.transform
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Box<Intersection>> {
+    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
         if ray.direction.y.abs() < 0.00001 {
             vec![]
         } else {
             let t = -ray.origin.y / ray.direction.y;
-            vec![Box::new(Intersection::new(t, *self))]
+            vec![Intersection::new(t, *self)]
         }
     }
 

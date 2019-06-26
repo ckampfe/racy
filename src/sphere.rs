@@ -38,7 +38,7 @@ impl Shape for Sphere {
             .normalize()
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Box<Intersection>> {
+    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
         let sphere_to_ray = ray.origin - self.origin;
         let a = ray.direction.dot(&ray.direction);
         let b = 2.0 * ray.direction.dot(&sphere_to_ray);
@@ -51,10 +51,7 @@ impl Shape for Sphere {
             let disc_sqrt = discriminant.sqrt();
             let t1 = -b - disc_sqrt / (2.0 * a);
             let t2 = -b + disc_sqrt / (2.0 * a);
-            vec![
-                Box::new(Intersection::new(t1, *self)),
-                Box::new(Intersection::new(t2, *self)),
-            ]
+            vec![Intersection::new(t1, *self), Intersection::new(t2, *self)]
         }
     }
 
