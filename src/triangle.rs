@@ -14,6 +14,7 @@ pub struct Triangle {
     pub normal: Vector3<f32>,
     pub transform: Matrix4<f32>,
     pub material: Material,
+    obj_index: usize
 }
 
 impl Triangle {
@@ -33,11 +34,19 @@ impl Triangle {
             normal,
             transform,
             material,
+            obj_index: Default::default()
         }
     }
 }
 
 impl Shape for Triangle {
+    fn get_obj_index(&self) -> usize {
+        self.obj_index
+    }
+
+    fn set_obj_index(&mut self, obj_index: usize) {
+        self.obj_index = obj_index
+    }
     fn material(&self) -> Material {
         self.material
     }
@@ -63,7 +72,7 @@ impl Shape for Triangle {
             .normalize()
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
+    fn local_intersect(&self, ray: Ray, object_index: usize) -> Vec<Intersection> {
         let dir_cross_e2 = ray.direction.cross(&self.e2);
         let det = self.e1.dot(&dir_cross_e2);
 
@@ -87,7 +96,7 @@ impl Shape for Triangle {
                     vec![]
                 } else {
                     let t = f * self.e2.dot(&origin_cross_e1);
-                    vec![Intersection::new(t, self)]
+                    vec![Intersection::new(t, object_index)]
                 }
             }
         }

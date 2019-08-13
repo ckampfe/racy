@@ -1,5 +1,6 @@
 mod camera;
 mod canvas;
+mod group;
 mod intersection;
 mod light;
 mod material;
@@ -12,6 +13,7 @@ mod triangle;
 mod world;
 
 use crate::camera::Camera;
+use crate::group::Group;
 use crate::material::Material;
 use crate::shape::Shape;
 use crate::triangle::Triangle;
@@ -26,7 +28,7 @@ use nalgebra::{Point3, Vector3};
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 /*
 fn clock() -> std::io::Result<()> {
@@ -99,7 +101,7 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     material.color = Vector3::new(0.0196, 0.65, 0.874);
 
-    let mut triangles: Vec<Arc<dyn Shape + Send + Sync>> = mesh
+    let mut triangles: Vec<Arc<RwLock<dyn Shape + Send + Sync>>> = mesh
         .triangles
         .par_iter()
         .map(|triangle| {
@@ -113,11 +115,11 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
             triangle.material = material;
 
-            let shape: Arc<dyn Shape + Send + Sync> = Arc::new(triangle);
+            let shape: Arc<RwLock<dyn Shape + Send + Sync>> = Arc::new(RwLock::new(triangle));
 
             shape
         })
-        .collect::<Vec<Arc<dyn Shape + Send + Sync>>>();
+        .collect::<Vec<Arc<RwLock<dyn Shape + Send + Sync>>>>();
 
     let mut world = World::default();
 
@@ -142,9 +144,38 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     camera.transform = view_transforms;
 
-    world.objects.append(&mut triangles);
+    // world.objects.append(&mut triangles);
 
-    // world.objects = triangles;
+    // for triangle in triangles {
+    //     world.add_object(triangle);
+    // }
+
+    let s = sphere::Sphere::new();
+
+    let g = Arc::new(RwLock::new(Group::new()));
+
+    g.write().unwrap().children_objs = triangles;
+
+    world.add_object(g);
+
+    // add sphere
+    world.add_object(Arc::new(RwLock::new(s)));
+
+    /*
+    1. Add interface to world objects (ie, "#add_child()" or similar)
+    2. Have that interface stamp the object with its index in the object list
+    3. A group is a list of indexes into this object list, rather than objects themselves
+    4. All group work happens against this list, like the bounding box tests, etc.
+    */
+
+    /*
+    1. create various shapes.
+    2. add shapes to a group(s)
+    at this point, the group owns the shapes
+    3. add group to world.
+    at this point, group transfers ownership of shapes to world
+    and receives back indexes to those shapes so it can check them
+    */
 
     let canvas = camera.render::<T>(world);
 

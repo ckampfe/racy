@@ -8,6 +8,7 @@ use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 pub struct Plane {
     transform: Matrix4<f32>,
     material: Material,
+    obj_index: usize
 }
 
 impl Plane {
@@ -15,11 +16,20 @@ impl Plane {
         Plane {
             transform: Matrix4::identity(),
             material: Material::default(),
+            obj_index: Default::default()
         }
     }
 }
 
 impl Shape for Plane {
+    fn get_obj_index(&self) -> usize {
+        self.obj_index
+    }
+
+    fn set_obj_index(&mut self, obj_index: usize) {
+        self.obj_index = obj_index
+    }
+
     fn material(&self) -> Material {
         self.material
     }
@@ -27,12 +37,12 @@ impl Shape for Plane {
         self.transform
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
+    fn local_intersect(&self, ray: Ray, index: usize) -> Vec<Intersection> {
         if ray.direction.y.abs() < 0.00001 {
             vec![]
         } else {
             let t = -ray.origin.y / ray.direction.y;
-            vec![Intersection::new(t, self)]
+            vec![Intersection::new(t, index)]
         }
     }
 

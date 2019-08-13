@@ -10,9 +10,18 @@ pub struct Sphere {
     pub radius: f32,
     pub transform: Matrix4<f32>,
     pub material: Material,
+    obj_index: usize
 }
 
 impl Shape for Sphere {
+    fn get_obj_index(&self) -> usize {
+        self.obj_index
+    }
+
+    fn set_obj_index(&mut self, obj_index: usize) {
+        self.obj_index = obj_index
+    }
+
     fn material(&self) -> Material {
         self.material
     }
@@ -38,7 +47,7 @@ impl Shape for Sphere {
             .normalize()
     }
 
-    fn local_intersect(&self, ray: Ray) -> Vec<Intersection> {
+    fn local_intersect(&self, ray: Ray, object_index: usize) -> Vec<Intersection> {
         let sphere_to_ray = ray.origin - self.origin;
         let a = ray.direction.dot(&ray.direction);
         let b = 2.0 * ray.direction.dot(&sphere_to_ray);
@@ -51,7 +60,7 @@ impl Shape for Sphere {
             let disc_sqrt = discriminant.sqrt();
             let t1 = -b - disc_sqrt / (2.0 * a);
             let t2 = -b + disc_sqrt / (2.0 * a);
-            vec![Intersection::new(t1, self), Intersection::new(t2, self)]
+            vec![Intersection::new(t1, object_index), Intersection::new(t2, object_index)]
         }
     }
 
@@ -67,6 +76,7 @@ impl Sphere {
             radius: 1.0,
             transform: Matrix4::identity(),
             material: Material::default(),
+            obj_index: Default::default()
         }
     }
 }
