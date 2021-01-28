@@ -17,16 +17,15 @@ use crate::shape::Shape;
 use crate::triangle::Triangle;
 use crate::world::World;
 
-use memmap::MmapOptions;
 use nom_stl;
 use rayon::prelude::*;
 
 use nalgebra::{Point3, Vector3};
 
-use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::sync::Arc;
+use std::{error::Error, io::BufReader};
 
 /*
 fn clock() -> std::io::Result<()> {
@@ -88,27 +87,33 @@ fn stl() -> std::io::Result<()> {
 
 fn stl2<T: Shape>() -> std::io::Result<()> {
     // options.stl_path
-    let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
+    // let file = std::fs::File::open("/Users/clark/code/nom_stl/fixtures/Root_Vase.stl").unwrap();
+    // let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
+    let file =
+        std::fs::File::open("/Users/clark/code/nom_stl/fixtures/MOON_PRISM_POWER.stl").unwrap();
     // let file = std::fs::File::open("/Users/clark/Downloads/rpi3-top_rev03.stl").unwrap();
-    let mmap = unsafe { MmapOptions::new().map(&file)? };
-    let (_, mesh) = nom_stl::parse_stl(&mmap).unwrap();
+    let mut bytes = BufReader::new(file);
+    let mesh = nom_stl::parse_stl(&mut bytes).unwrap();
 
-    let vertices = mesh.vertices;
+    let vertices = mesh.vertices();
 
     let mut material = Material::new();
 
     material.color = Vector3::new(0.0196, 0.65, 0.874);
 
     let mut triangles: Vec<Arc<dyn Shape + Send + Sync>> = mesh
-        .triangles
+        .triangles()
         .par_iter()
         .map(|triangle| {
-            let [v1i, v2i, v3i] = triangle.vertices;
+            let [v1i, v2i, v3i] = triangle.vertices();
 
             let mut triangle = Triangle::new(
-                Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]),
-                Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]),
-                Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]),
+                Point3::from(v1i),
+                Point3::from(v2i),
+                Point3::from(v3i),
+                // Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]),
+                // Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]),
+                // Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]),
             );
 
             triangle.material = material;
@@ -151,14 +156,16 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
     let ppm = canvas.to_ppm();
 
     // let mut f = File::create("case.ppm")?;
-    let mut f = File::create("moon_floor.ppm")?;
+    // let mut f = File::create("root_vase_floor.ppm")?;
+    // let mut f = File::create("2021moon.ppm")?;
+    let mut f = File::create("2021pen.ppm")?;
     f.write_all(ppm.as_bytes())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
     // Ok(clock()?)
-    let x = stl2::<sphere::Sphere>()?;
-    Ok(x)
+    stl2::<sphere::Sphere>()?;
+    Ok(())
     // Ok(stl2()?)
 }
