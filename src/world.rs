@@ -29,11 +29,11 @@ impl World {
     //     xs.contains(&object)
     // }
 
-    fn intersect<T: Shape>(&self, ray: Ray) -> Vec<Intersection> {
+    fn intersect(&self, ray: Ray) -> Vec<Intersection> {
         let mut intersections: Vec<Intersection> = self
             .objects
             .iter()
-            .flat_map(|object| (**object).intersect(&ray))
+            .flat_map(|object| object.intersect(&ray))
             .collect();
 
         intersections.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap_or(Ordering::Equal));
@@ -41,35 +41,35 @@ impl World {
         intersections
     }
 
-    fn shade_hit<T: Shape>(&self, comps: PreparedComputations<&dyn Shape>) -> Vector3<f32> {
+    fn shade_hit(&self, comps: PreparedComputations<&dyn Shape>) -> Vector3<f32> {
         Light::lighting(
             (*comps.1).material(),
             self.light,
             comps.6,
             comps.3,
             comps.4,
-            self.is_shadowed::<T>(comps.6),
+            self.is_shadowed(comps.6),
         )
     }
 
-    pub fn color_at<T: Shape>(&self, ray: Ray) -> Vector3<f32> {
-        let intersections = self.intersect::<T>(ray);
+    pub fn color_at(&self, ray: Ray) -> Vector3<f32> {
+        let intersections = self.intersect(ray);
         let intersection = Intersection::hit(intersections);
 
         if let Some(i) = intersection {
             let comps = i.prepare_computations(&ray);
-            self.shade_hit::<T>(comps)
+            self.shade_hit(comps)
         } else {
             Vector3::new(0.0, 0.0, 0.0) // black
         }
     }
 
-    fn is_shadowed<T: Shape>(&self, point: Point3<f32>) -> bool {
+    fn is_shadowed(&self, point: Point3<f32>) -> bool {
         let v = self.light.position - point;
         let distance = v.magnitude();
         let direction = v.normalize();
         let ray = Ray::new(point, direction);
-        let intersections = self.intersect::<T>(ray);
+        let intersections = self.intersect(ray);
         let hit = Intersection::hit(intersections);
 
         if let Some(h) = hit {
@@ -119,7 +119,8 @@ impl Default for World {
         let floor = Plane::new();
 
         World {
-            objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
+            // objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
+            objects: vec![Arc::new(floor)],
             light,
         }
     }

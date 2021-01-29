@@ -1,9 +1,10 @@
 use crate::canvas::Canvas;
 use crate::ray::Ray;
-use crate::shape::Shape;
 use crate::world::World;
 use nalgebra::{Matrix4, Point3, Projective3, Vector3};
-use rayon::prelude::*;
+
+// #[cfg(not(target = "wasm32-unknown-unknown"))]
+// use rayon::prelude::*;
 
 pub struct Camera {
     pub hsize: usize,
@@ -57,30 +58,66 @@ impl Camera {
         Ray::new(origin, direction)
     }
 
-    pub fn render<T: Shape>(&self, world: World) -> Canvas {
+    pub fn render(&self, world: World) -> Canvas {
         let mut image = Canvas::new(self.hsize, self.vsize);
 
-        // for y in 0..self.vsize {
-        //     for x in 0..self.hsize {
+        let mut pixels = vec![];
+        for y in 0..self.vsize {
+            for x in 0..self.hsize {
+                pixels.push((x, y));
+            }
+        }
+
+        // #[cfg(not(target = "wasm32-unknown-unknown"))]
+        // let (s, r) = std::sync::mpsc::channel();
+
+        // #[cfg(not(target = "wasm32-unknown-unknown"))]
+        // let pthread = std::thread::spawn(move || {
+        //     let mut i = 0;
+
+        //     while let Ok(_) = r.recv() {
+        //         i += 1;
+        //         if i % 1000 == 0 && i != 0 {
+        //             println!("{}", i);
+        //         }
+        //     }
+        // });
+
+        // #[cfg(not(target = "wasm32-unknown-unknown"))]
+        // let xycs = pixels
+        //     .into_par_iter()
+        //     .map_with(s, |s, (x, y)| {
         //         let ray = self.ray_for_pixel(x, y);
         //         let color = world.color_at(ray);
-        //         image.write_pixel(x, y, color);
-        //     }
-        // }
-
-        let xycs: Vec<(usize, usize, Vector3<f32>)> = (0..self.vsize)
-            .into_par_iter()
-            .flat_map(|y: usize| {
-                (0..self.hsize)
-                    .into_par_iter()
-                    .map(|x| {
-                        let ray = self.ray_for_pixel(x, y);
-                        let color = world.color_at::<T>(ray);
-                        (x, y, color)
-                    })
-                    .collect::<Vec<(usize, usize, Vector3<f32>)>>()
+        //         s.send(()).unwrap();
+        //         (x, y, color)
+        //     })
+        //     .collect::<Vec<_>>();
+        let xycs = pixels
+            .into_iter()
+            .map(|(x, y)| {
+                let ray = self.ray_for_pixel(x, y);
+                let color = world.color_at(ray);
+                (x, y, color)
             })
-            .collect();
+            .collect::<Vec<_>>();
+
+        // #[cfg(not(target = "wasm32-unknown-unknown"))]
+        // pthread.join().unwrap();
+
+        // let xycs: Vec<(usize, usize, Vector3<f32>)> = (0..self.vsize)
+        //     .into_par_iter()
+        //     .flat_map(|y: usize| {
+        //         (0..self.hsize)
+        //             .into_par_iter()
+        //             .map(|x| {
+        //                 let ray = self.ray_for_pixel(x, y);
+        //                 let color = world.color_at::<T>(ray);
+        //                 (x, y, color)
+        //             })
+        //             .collect::<Vec<(usize, usize, Vector3<f32>)>>()
+        //     })
+        //     .collect();
 
         for (x, y, color) in xycs {
             image.write_pixel(x, y, color)

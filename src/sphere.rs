@@ -1,7 +1,7 @@
-use crate::intersection::Intersection;
-use crate::material::Material;
 use crate::ray::Ray;
 use crate::shape::Shape;
+use crate::{aabb::BoundingBox, intersection::Intersection};
+use crate::{aabb::AABB, material::Material};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -57,6 +57,19 @@ impl Shape for Sphere {
 
     fn local_normal_at(&self, point: Point3<f32>) -> Vector3<f32> {
         point.coords
+    }
+}
+
+impl BoundingBox for Sphere {
+    fn bounding_box(&self) -> crate::aabb::AABB {
+        let aabb = AABB::default();
+        let origin = self.origin;
+        let radius = self.radius;
+
+        AABB {
+            min: Point3::new(origin.x - radius, origin.y - radius, origin.z - radius),
+            max: Point3::new(origin.x + radius, origin.y + radius, origin.z + radius),
+        }
     }
 }
 

@@ -1,5 +1,7 @@
+mod aabb;
 mod camera;
 mod canvas;
+mod group;
 mod intersection;
 mod light;
 mod material;
@@ -17,8 +19,8 @@ use crate::shape::Shape;
 use crate::triangle::Triangle;
 use crate::world::World;
 
-use nom_stl;
-use rayon::prelude::*;
+use group::Group;
+// use rayon::prelude::*;
 
 use nalgebra::{Point3, Vector3};
 
@@ -85,12 +87,13 @@ fn stl() -> std::io::Result<()> {
 }
 */
 
-fn stl2<T: Shape>() -> std::io::Result<()> {
+fn stl2() -> std::io::Result<()> {
     // options.stl_path
-    // let file = std::fs::File::open("/Users/clark/code/nom_stl/fixtures/Root_Vase.stl").unwrap();
-    // let file = std::fs::File::open("/Users/clark/code/Moon.stl").unwrap();
-    let file =
-        std::fs::File::open("/Users/clark/code/nom_stl/fixtures/MOON_PRISM_POWER.stl").unwrap();
+    // let file =
+    //     std::fs::File::open("/home/clark/code/personal/nom_stl/fixtures/Root_Vase.stl").unwrap();
+    let file = std::fs::File::open("/home/clark/code/personal/Moon.stl").unwrap();
+    // let file =
+    // std::fs::File::open("/Users/clark/code/nom_stl/fixtures/MOON_PRISM_POWER.stl").unwrap();
     // let file = std::fs::File::open("/Users/clark/Downloads/rpi3-top_rev03.stl").unwrap();
     let mut bytes = BufReader::new(file);
     let mesh = nom_stl::parse_stl(&mut bytes).unwrap();
@@ -103,18 +106,12 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
 
     let mut triangles: Vec<Arc<dyn Shape + Send + Sync>> = mesh
         .triangles()
-        .par_iter()
+        .iter()
         .map(|triangle| {
             let [v1i, v2i, v3i] = triangle.vertices();
 
-            let mut triangle = Triangle::new(
-                Point3::from(v1i),
-                Point3::from(v2i),
-                Point3::from(v3i),
-                // Point3::new(vertices[v1i][0], vertices[v1i][1], vertices[v1i][2]),
-                // Point3::new(vertices[v2i][0], vertices[v2i][1], vertices[v2i][2]),
-                // Point3::new(vertices[v3i][0], vertices[v3i][1], vertices[v3i][2]),
-            );
+            let mut triangle =
+                Triangle::new(Point3::from(v1i), Point3::from(v2i), Point3::from(v3i));
 
             triangle.material = material;
 
@@ -140,32 +137,35 @@ fn stl2<T: Shape>() -> std::io::Result<()> {
     // );
     let view_transforms = Camera::view_transforms(
         Point3::new(0.0, -2.5, -10.0),
-        // Point3::new(-10.0, -20.5, -20.0),
         Point3::new(0.0, -5.0, 0.0),
         Vector3::new(0.0, 1.0, 0.0),
     );
 
     camera.transform = view_transforms;
 
-    world.objects.append(&mut triangles);
+    let group = Group::new(triangles);
+
+    // world.objects.append(&mut triangles);
+    world.objects.push(Arc::new(group));
 
     // world.objects = triangles;
 
-    let canvas = camera.render::<T>(world);
+    let canvas = camera.render(world);
 
     let ppm = canvas.to_ppm();
 
     // let mut f = File::create("case.ppm")?;
     // let mut f = File::create("root_vase_floor.ppm")?;
-    // let mut f = File::create("2021moon.ppm")?;
-    let mut f = File::create("2021pen.ppm")?;
+    // let mut f = File::create("2021moon2.ppm")?;
+    let mut f = File::create("2021moon3.ppm")?;
+    // let mut f = File::create("2021pen.ppm")?;
     f.write_all(ppm.as_bytes())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Hello, world!");
     // Ok(clock()?)
-    stl2::<sphere::Sphere>()?;
+    stl2()?;
     Ok(())
     // Ok(stl2()?)
 }

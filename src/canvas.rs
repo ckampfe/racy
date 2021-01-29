@@ -1,3 +1,6 @@
+use std::convert::TryInto;
+
+use image::jpeg::JpegEncoder;
 use nalgebra::Vector3;
 
 type Pixel = Vector3<f32>;
@@ -40,6 +43,63 @@ impl Canvas {
 
     pub fn pixel_at(&self, x: usize, y: usize) -> Pixel {
         self.grid[y][x]
+    }
+
+    pub fn to_image(&self, format: image::ImageFormat) -> Result<Vec<u8>, String> {
+        let mut buf = Vec::new();
+        let mut img = image::RgbImage::new(
+            self.width().try_into().unwrap(),
+            self.height().try_into().unwrap(),
+        );
+        for y in 0..self.height() {
+            for x in 0..self.width() {
+                let pixel = self.pixel_at(x, y);
+                let color = image::Rgb([
+                    scale(clamp(pixel.x)).try_into().unwrap(),
+                    scale(clamp(pixel.y)).try_into().unwrap(),
+                    scale(clamp(pixel.z)).try_into().unwrap(),
+                ]);
+
+                img.put_pixel(x.try_into().unwrap(), y.try_into().unwrap(), color);
+            }
+        }
+
+        match format {
+            image::ImageFormat::Png => {
+                let (x, y) = img.dimensions();
+
+                let as_png = image::png::PngEncoder::new(&mut buf);
+
+                let page_as_bytes = img.into_raw();
+
+                as_png
+                    .encode(&page_as_bytes, x, y, image::ColorType::Rgba8)
+                    .map_err(|e| format!("{}", e))?;
+
+                Ok(buf)
+            }
+            image::ImageFormat::Jpeg => {
+                let mut encoder = JpegEncoder::new(&mut buf);
+                encoder
+                    .encode_image(&mut img)
+                    .map_err(|e| format!("{}", e))?;
+                Ok(buf)
+            }
+            image::ImageFormat::Gif => {
+                todo!()
+            }
+            _ => Err(format!("{:?} not supported", format)), // image::ImageFormat::WebP => {}
+                                                             // image::ImageFormat::Pnm => {}
+                                                             // image::ImageFormat::Tiff => {}
+                                                             // image::ImageFormat::Tga => {}
+                                                             // image::ImageFormat::Dds => {}
+                                                             // image::ImageFormat::Bmp => {}
+                                                             // image::ImageFormat::Ico => {}
+                                                             // image::ImageFormat::Hdr => {}
+                                                             // image::ImageFormat::Farbfeld => {}
+                                                             // image::ImageFormat::Avif => {}
+                                                             // image::ImageFormat::__NonExhaustive(_) => {}
+        }
     }
 
     pub fn to_ppm(&self) -> String {

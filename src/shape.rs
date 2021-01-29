@@ -1,9 +1,9 @@
-use crate::intersection::Intersection;
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::{aabb::BoundingBox, intersection::Intersection};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
-pub trait Shape {
+pub trait Shape: BoundingBox + Send + Sync {
     fn material(&self) -> Material;
     fn transform(&self) -> Matrix4<f32>;
     fn normal_at(&self, point: Point3<f32>) -> Vector3<f32>;

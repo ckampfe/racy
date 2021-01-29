@@ -15,6 +15,16 @@ impl Material {
     pub fn new() -> Self {
         Default::default()
     }
+
+    pub fn empty() -> Self {
+        Material {
+            color: Vector3::new(1.0, 1.0, 1.0),
+            ambient: 0.1,
+            diffuse: 0.9,
+            specular: 0.9,
+            shininess: 200.0,
+        }
+    }
 }
 
 impl Default for Material {

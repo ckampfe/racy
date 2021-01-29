@@ -1,7 +1,7 @@
-use crate::intersection::Intersection;
-use crate::material::Material;
 use crate::ray::Ray;
 use crate::shape::Shape;
+use crate::{aabb::BoundingBox, intersection::Intersection};
+use crate::{aabb::AABB, material::Material};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy)]
@@ -34,6 +34,35 @@ impl Triangle {
             transform,
             material,
         }
+    }
+}
+
+impl BoundingBox for Triangle {
+    fn bounding_box(&self) -> crate::aabb::AABB {
+        let mut aabb = AABB::default();
+
+        for point in &[self.p1, self.p2, self.p3] {
+            if point.x <= aabb.min.x {
+                aabb.min.x = point.x;
+            }
+            if point.y <= aabb.min.y {
+                aabb.min.y = point.y;
+            }
+            if point.z <= aabb.min.z {
+                aabb.min.z = point.z;
+            }
+            if point.x >= aabb.max.x {
+                aabb.max.x = point.x;
+            }
+            if point.y >= aabb.max.y {
+                aabb.max.y = point.y;
+            }
+            if point.y >= aabb.max.y {
+                aabb.max.y = point.y;
+            }
+        }
+
+        aabb
     }
 }
 

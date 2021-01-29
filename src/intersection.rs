@@ -1,7 +1,7 @@
 use crate::ray::Ray;
 use crate::shape::Shape;
 use nalgebra::{Point3, Vector3};
-use std::cmp::Ordering;
+use std::{cmp::Ordering, sync::Arc};
 
 pub type PreparedComputations<'a, T> = (
     f32,
