@@ -1,17 +1,17 @@
 use crate::ray::Ray;
 use crate::shape::Shape;
 use nalgebra::{Point3, Vector3};
-use std::{cmp::Ordering, sync::Arc};
+use std::cmp::Ordering;
 
-pub type PreparedComputations<'a, T> = (
-    f32,
-    T,
-    Point3<f32>,
-    Vector3<f32>,
-    Vector3<f32>,
-    bool,
-    Point3<f32>,
-);
+pub struct PreparedComputations<'p> {
+    pub t: f32,
+    pub object: &'p dyn Shape,
+    pub point: Point3<f32>,
+    pub eyev: Vector3<f32>,
+    pub normalv: Vector3<f32>,
+    pub inside: bool,
+    pub over_point: Point3<f32>,
+}
 
 pub struct Intersection<'a> {
     pub t: f32,
@@ -21,10 +21,6 @@ pub struct Intersection<'a> {
 impl<'a> Intersection<'a> {
     pub fn new<T: 'a + Shape>(t: f32, object: &'a T) -> Self {
         Intersection { t, object }
-    }
-
-    pub fn aggregate(intersections: Vec<Intersection>) -> Vec<Intersection> {
-        intersections
     }
 
     pub fn hit(intersections: Vec<Intersection>) -> Option<Intersection> {
@@ -43,10 +39,10 @@ impl<'a> Intersection<'a> {
         }
     }
 
-    pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations<&dyn Shape> {
+    pub fn prepare_computations(&self, ray: &Ray) -> PreparedComputations {
         let point = ray.position(self.t);
         let eyev = ray.direction * -1.0;
-        let normalv = (*self.object).normal_at(point);
+        let normalv = self.object.normal_at(point);
 
         let (inside, normalv) = if normalv.dot(&eyev) < 0.0 {
             (true, normalv * -1.0)
@@ -56,14 +52,14 @@ impl<'a> Intersection<'a> {
 
         let over_point = point + normalv * 0.00001;
 
-        (
-            self.t,
-            self.object,
+        PreparedComputations {
+            t: self.t,
+            object: self.object,
             point,
             eyev,
             normalv,
             inside,
             over_point,
-        )
+        }
     }
 }

@@ -1,7 +1,6 @@
 use nalgebra::{Matrix4, Point3, Vector3};
 
 use std::cmp::Ordering;
-use std::sync::Arc;
 
 use crate::intersection::{Intersection, PreparedComputations};
 use crate::light::Light;
@@ -12,23 +11,11 @@ use crate::shape::Shape;
 use crate::sphere::Sphere;
 
 pub struct World {
-    pub objects: Vec<Arc<dyn Shape + Send + Sync>>,
+    pub objects: Vec<Box<dyn Shape>>,
     pub light: Light,
 }
 
 impl World {
-    pub fn new() -> Self {
-        World {
-            objects: vec![],
-            light: Light::default(),
-        }
-    }
-
-    // pub fn contains<T: Shape + PartialEq>(&self, object: Box<Shape>) -> bool {
-    //     let xs = self.objects.iter().map(|x| *x.clone()).collect::<Vec<Box<Shape>>>();
-    //     xs.contains(&object)
-    // }
-
     fn intersect(&self, ray: Ray) -> Vec<Intersection> {
         let mut intersections: Vec<Intersection> = self
             .objects
@@ -41,14 +28,14 @@ impl World {
         intersections
     }
 
-    fn shade_hit(&self, comps: PreparedComputations<&dyn Shape>) -> Vector3<f32> {
+    fn shade_hit(&self, comps: PreparedComputations) -> Vector3<f32> {
         Light::lighting(
-            (*comps.1).material(),
+            comps.object.material(),
             self.light,
-            comps.6,
-            comps.3,
-            comps.4,
-            self.is_shadowed(comps.6),
+            comps.over_point,
+            comps.eyev,
+            comps.normalv,
+            self.is_shadowed(comps.over_point),
         )
     }
 
@@ -83,10 +70,12 @@ impl World {
 impl Default for World {
     fn default() -> Self {
         let light = Light::point_light(Point3::new(16.0, 10.0, 25.0), Vector3::new(1.0, 1.0, 1.0));
-        let mut m = Material::default();
-        m.color = Vector3::new(0.1, 1.0, 0.1);
-        m.diffuse = 0.7;
-        m.specular = 0.2;
+        let m = Material {
+            color: Vector3::new(0.1, 1.0, 0.1),
+            diffuse: 0.7,
+            specular: 0.2,
+            ..Default::default()
+        };
 
         let mut s1 = Sphere::new();
 
@@ -95,11 +84,12 @@ impl Default for World {
         s1.transform = Matrix4::new_nonuniform_scaling(&Vector3::new(1.5, 1.5, 1.5))
             * Matrix4::new_translation(&Vector3::new(2.0, 0.8, -2.0));
 
-        let mut m2 = Material::default();
-
-        m2.color = Vector3::new(0.2, 0.1, 0.8);
-        m2.diffuse = 0.7;
-        m2.specular = 0.2;
+        let m2 = Material {
+            color: Vector3::new(0.2, 0.1, 0.8),
+            diffuse: 0.7,
+            specular: 0.2,
+            ..Default::default()
+        };
 
         let mut s2 = Sphere::new();
 
@@ -116,11 +106,12 @@ impl Default for World {
         // s3.transform = Matrix4::new_translation(&Vector3::new(3.5, 0.5, -0.5))
         //     * Matrix4::new_nonuniform_scaling(&Vector3::new(2.5, 2.5, 2.5));
 
-        let floor = Plane::new();
+        let floor = Box::new(Plane::new());
 
         World {
             // objects: vec![Arc::new(s1), Arc::new(s2), Arc::new(floor)],
-            objects: vec![Arc::new(floor)],
+            // objects: vec![Arc::new(floor)],
+            objects: vec![floor],
             light,
         }
     }

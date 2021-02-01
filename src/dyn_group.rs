@@ -7,14 +7,14 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::{material::Material, shape::Shape};
 
-pub struct Group<S: Shape> {
+pub struct DynGroup<S: Shape + Sized> {
     shapes: Vec<S>,
     bounding_box: AABB,
     material: Material,
     transform: Matrix4<f32>,
 }
 
-impl<S: Shape> Group<S> {
+impl<S: Shape + Sized> DynGroup<S> {
     pub fn new(shapes: Vec<S>) -> Self {
         let transform = Matrix4::identity();
         let material = Material::default();
@@ -25,7 +25,7 @@ impl<S: Shape> Group<S> {
             aabb.merge_mut(shape.bounding_box());
         }
 
-        Group {
+        DynGroup {
             shapes,
             bounding_box: aabb,
             material,
@@ -34,13 +34,13 @@ impl<S: Shape> Group<S> {
     }
 }
 
-impl<S: Shape> BoundingBox for Group<S> {
+impl<S: Shape + Sized> BoundingBox for DynGroup<S> {
     fn bounding_box(&self) -> AABB {
         self.bounding_box
     }
 }
 
-impl<S: Shape> Shape for Group<S> {
+impl<S: Shape + Sized> Shape for DynGroup<S> {
     fn material(&self) -> crate::material::Material {
         self.material
     }
@@ -69,7 +69,7 @@ impl<S: Shape> Shape for Group<S> {
             vec![]
         }
         #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-        if cube.local_intersect(ray).len() > 0 {
+        if !cube.local_intersect(ray).is_empty() {
             let intersections = self
                 .shapes
                 .iter()

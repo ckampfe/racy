@@ -1,7 +1,8 @@
+use crate::bounding_box::{BoundingBox, AABB};
+use crate::intersection::Intersection;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::shape::Shape;
-use crate::{aabb::BoundingBox, intersection::Intersection};
-use crate::{aabb::AABB, material::Material};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -61,8 +62,7 @@ impl Shape for Sphere {
 }
 
 impl BoundingBox for Sphere {
-    fn bounding_box(&self) -> crate::aabb::AABB {
-        let aabb = AABB::default();
+    fn bounding_box(&self) -> AABB {
         let origin = self.origin;
         let radius = self.radius;
 

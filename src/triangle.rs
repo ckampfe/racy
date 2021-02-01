@@ -1,7 +1,8 @@
+use crate::bounding_box::{BoundingBox, AABB};
+use crate::intersection::Intersection;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::shape::Shape;
-use crate::{aabb::BoundingBox, intersection::Intersection};
-use crate::{aabb::AABB, material::Material};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy)]
@@ -38,7 +39,7 @@ impl Triangle {
 }
 
 impl BoundingBox for Triangle {
-    fn bounding_box(&self) -> crate::aabb::AABB {
+    fn bounding_box(&self) -> AABB {
         let mut aabb = AABB::default();
 
         for point in &[self.p1, self.p2, self.p3] {
@@ -96,7 +97,8 @@ impl Shape for Triangle {
         let dir_cross_e2 = ray.direction.cross(&self.e2);
         let det = self.e1.dot(&dir_cross_e2);
 
-        if det.abs() < 0.00001 {
+        // if det.abs() < 0.00001 {
+        if det.abs() < f32::EPSILON {
             vec![]
         } else {
             let f = 1.0 / det;
@@ -105,7 +107,7 @@ impl Shape for Triangle {
 
             let u = f * p1_to_origin.dot(&dir_cross_e2);
 
-            if u < 0.0 || u > 1.0 {
+            if !(0.0..=1.0).contains(&u) {
                 vec![]
             } else {
                 let origin_cross_e1 = p1_to_origin.cross(&self.e1);

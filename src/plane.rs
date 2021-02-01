@@ -1,7 +1,8 @@
+use crate::bounding_box::{BoundingBox, AABB};
+use crate::intersection::Intersection;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::shape::Shape;
-use crate::{aabb::BoundingBox, intersection::Intersection};
-use crate::{aabb::AABB, material::Material};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 #[derive(Clone, Copy)]
@@ -16,13 +17,13 @@ impl Plane {
         Plane {
             transform: Matrix4::identity(),
             material: Material::default(),
-            bounding_box: AABB::all(),
+            bounding_box: AABB::default(),
         }
     }
 }
 
 impl BoundingBox for Plane {
-    fn bounding_box(&self) -> crate::aabb::AABB {
+    fn bounding_box(&self) -> AABB {
         self.bounding_box
     }
 }

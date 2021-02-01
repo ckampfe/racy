@@ -1,6 +1,7 @@
+use crate::bounding_box::BoundingBox;
+use crate::intersection::Intersection;
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::{aabb::BoundingBox, intersection::Intersection};
 use nalgebra::{Matrix4, Point3, Projective3, Transform, Vector3};
 
 pub trait Shape: BoundingBox + Send + Sync {
