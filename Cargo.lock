@@ -319,9 +319,9 @@ dependencies = [
 
 [[package]]
 name = "nom_stl"
-version = "0.2.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f690f4f7b17153cb7c1b65bb639b893b147cb9a92f1353a886134ba8be49f452"
+checksum = "ded25cbaa1b48f644f6a5635bfe017150aaa7a4d3a970aa6b2258c18fdfd4b87"
 dependencies = [
  "nom",
 ]
